@@ -3,6 +3,7 @@ import numpy as np
 from skimage.morphology import binary_erosion, binary_dilation
 from skimage.morphology import disk, diamond
 
+
 # SKELETONIZATION AND RESTORING
 
 def skeletonize_n_restore(img, str_elem_name='disk', str_elem_size=3):
@@ -15,14 +16,14 @@ def skeletonize_n_restore(img, str_elem_name='disk', str_elem_size=3):
     img = np.array(img)
     img = np.invert(img)
     # skeletonize
-    s_list, res, n_total = get_skeleton(img, str_elem)
+    s_list, res, total_n = get_skeleton(img, str_elem)
     skeletonized_img = Image.fromarray(res.astype('uint8'))
     # restore
-    res = get_restored(res, s_list, str_elem)
+    res = get_restored(res, s_list, str_elem, total_n)
     res = np.invert(res)
     restored_img = Image.fromarray(res.astype('uint8'))
 
-    return skeletonized_img, restored_img, n_total
+    return skeletonized_img, restored_img, total_n
 
 
 def get_skeleton(img, str_elem):
@@ -53,12 +54,17 @@ def get_skeleton(img, str_elem):
     return s_list, res, total_n
 
 
-def get_restored(img, s_list, str_elem):
+def get_restored(img, s_list, str_elem, total_n):
+    n = total_n
     # step 1
     res = np.zeros(img.shape)
-    for i in range(len(s_list)):
+    while True:
         # step 2
-        res = np.logical_or(res, s_list[len(s_list) - 1 - i])
+        res = np.logical_or(res, s_list[n])
+        if n == 0:
+            break
         # step 3
         res = binary_dilation(res, str_elem)
+        # step 4
+        n -= 1
     return res
