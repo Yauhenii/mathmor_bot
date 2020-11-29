@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 current_image = None
 is_ready_to_upload = False
 TEMP_FILE_PATH = 'data/outfile.png'
+TOKEN_FILE_PATH = 'data/token/token.txt'
 
 
 def get_image(current_image):
@@ -240,7 +241,9 @@ def image_handler(update: Update, context: CallbackContext) -> None:
 
 
 def main():
-    updater = Updater("1481492185:AAHdVukbDBrQsKlo6JqfJPWwsqTWvuL40Q4", use_context=True)
+    with open(TOKEN_FILE_PATH,'r') as file:
+        token=file.read()
+    updater = Updater(token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('menu', menu))
