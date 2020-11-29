@@ -1,3 +1,4 @@
+import os
 import logging
 from io import BytesIO
 import PIL.ImageOps
@@ -18,6 +19,7 @@ current_image = None
 is_ready_to_upload = False
 TEMP_FILE_PATH = 'data/outfile.png'
 TOKEN_FILE_PATH = 'data/token/token.txt'
+EXAMPLES_DIR_PATH = 'data/examples/'
 
 
 def get_image(current_image):
@@ -161,6 +163,13 @@ def opt12(query, bot, message):
         query.edit_message_text(text="Nothing to show")
 
 
+def opt13(query, bot, message):
+    query.edit_message_text(text="Here are some image examples")
+    for filename in os.listdir(EXAMPLES_DIR_PATH):
+        bot.send_message(message.chat.id, filename)
+        bot.send_photo(message.chat.id, photo=open(os.path.join(EXAMPLES_DIR_PATH, filename), 'rb'))
+
+
 options = {
     '1': opt1,
     '2': opt2,
@@ -169,6 +178,7 @@ options = {
     '5': opt5,
     '11': opt11,
     '12': opt12,
+    '13': opt13,
     '51': opt51,
     '52': opt52,
     '53': opt53,
@@ -241,8 +251,8 @@ def image_handler(update: Update, context: CallbackContext) -> None:
 
 
 def main():
-    with open(TOKEN_FILE_PATH,'r') as file:
-        token=file.read()
+    with open(TOKEN_FILE_PATH, 'r') as file:
+        token = file.read()
     updater = Updater(token, use_context=True)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
