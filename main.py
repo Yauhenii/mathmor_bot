@@ -46,7 +46,7 @@ def opt2(query, bot, message):
     if current_image is not None:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image)
-        threshold = 200
+        threshold = 128
         image = image.convert('L').point(lambda x: 255 if x > threshold else 0, mode='1')
         image.save(TEMP_FILE_PATH)
         query.edit_message_text(text="Binary image")
@@ -87,25 +87,32 @@ def opt5(query, bot, message):
             [
                 InlineKeyboardButton("Diamond 3x3", callback_data='51'),
                 InlineKeyboardButton("Diamond 5x5", callback_data='52'),
-            ]]
+            ],
+            [
+                InlineKeyboardButton("Disk 3x3", callback_data='53'),
+                InlineKeyboardButton("Disk 5x5", callback_data='54'),
+            ]
+        ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        query.edit_message_text(text='Please choose structuring element:', reply_markup=reply_markup)
+        query.edit_message_text(
+            text='Make sure you have uploaded binary image, otherwise skeletization result may be unexpected. '
+                 + 'Please choose structuring element', reply_markup=reply_markup)
 
     else:
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt51(query, bot, message):
+def opt5x(query, bot, message, str_name, str_shape):
     global current_image
 
     if current_image is not None:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image)
-        skeletonized_img, restored_img, n_total = skeletonize_n_restore(image, 'diamond', 3)
+        skeletonized_img, restored_img, n_total = skeletonize_n_restore(image, str_name, str_shape)
         query.edit_message_text(
-            text="Skeletonized with diamond 3x3 image")
+            text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
         pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         pyplot.imsave(TEMP_FILE_PATH, restored_img, cmap=pyplot.cm.gray)
@@ -116,18 +123,20 @@ def opt51(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt52(query, bot, message):
-    global current_image
+def opt51(query, bot, message):
+    opt5x(query, bot, message, 'diamond', 3)
 
-    if current_image is not None:
-        query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
-        image = PIL.ImageOps.invert(image)
-        image.save(TEMP_FILE_PATH)
-        query.edit_message_text(text="Skeletonized with diamond 5x5 image")
-        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
-    else:
-        query.edit_message_text(text="Nothing to work with")
+
+def opt52(query, bot, message):
+    opt5x(query, bot, message, 'diamond', 5)
+
+
+def opt53(query, bot, message):
+    opt5x(query, bot, message, 'disk', 3)
+
+
+def opt54(query, bot, message):
+    opt5x(query, bot, message, 'disk', 5)
 
 
 def opt11(query, bot, message):
@@ -160,7 +169,9 @@ options = {
     '11': opt11,
     '12': opt12,
     '51': opt51,
-    '52': opt52
+    '52': opt52,
+    '53': opt53,
+    '54': opt54
 }
 
 
@@ -183,7 +194,6 @@ def menu(update: Update, context: CallbackContext) -> None:
         ],
         [
             InlineKeyboardButton("Skeletonize image", callback_data='5'),
-            InlineKeyboardButton("Restore image", callback_data='6'),
         ],
         [InlineKeyboardButton("Upload image", callback_data='11')],
         [InlineKeyboardButton("Show current image", callback_data='12')],
@@ -226,7 +236,7 @@ def image_handler(update: Update, context: CallbackContext) -> None:
         is_ready_to_upload = False
 
     else:
-        bot.send_message(message.chat.id, 'Please choose \'Upload image\' button from menu to upload image')
+        bot.send_message(message.chat.id, 'Please choose \'Upload image\' button from /menu to upload image')
 
 
 def main():
