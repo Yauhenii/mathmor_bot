@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 current_image = {}
-is_ready_to_upload = False
+is_ready_to_upload = set()
 TEMP_FILE_PATH = 'data/outfile.png'
 TOKEN_FILE_PATH = 'data/token/token.txt'
 EXAMPLES_DIR_PATH = 'data/examples/'
@@ -147,7 +147,7 @@ def opt11(query, bot, message):
     global is_ready_to_upload
 
     query.edit_message_text(text="Upload image")
-    is_ready_to_upload = True
+    is_ready_to_upload.add(message.chat.id)
 
 
 def opt12(query, bot, message):
@@ -241,10 +241,10 @@ def image_handler(update: Update, context: CallbackContext) -> None:
     bot = update.message.bot
     message = update.message
 
-    if is_ready_to_upload:
+    if message.chat.id in is_ready_to_upload:
         current_image[message.chat.id] = bot.getFile(update.message.photo[-1].file_id)
         bot.send_message(message.chat.id, 'Image is successfully uploaded')
-        is_ready_to_upload = False
+        is_ready_to_upload.remove(message.chat.id)
 
     else:
         bot.send_message(message.chat.id, 'Please choose \'Upload image\' button from /menu to upload image')
