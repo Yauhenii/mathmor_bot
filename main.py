@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-current_image = None
+current_image = {}
 is_ready_to_upload = False
 TEMP_FILE_PATH = 'data/outfile.png'
 TOKEN_FILE_PATH = 'data/token/token.txt'
@@ -32,9 +32,9 @@ def get_image(current_image):
 def opt1(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
+        image = get_image(current_image[message.chat.id])
         image = image.convert('LA')
         image.save(TEMP_FILE_PATH)
         query.edit_message_text(text="Grayscale image")
@@ -46,9 +46,9 @@ def opt1(query, bot, message):
 def opt2(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
+        image = get_image(current_image[message.chat.id])
         threshold = 128
         image = image.convert('L').point(lambda x: 255 if x > threshold else 0, mode='1')
         image.save(TEMP_FILE_PATH)
@@ -61,9 +61,9 @@ def opt2(query, bot, message):
 def opt3(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
+        image = get_image(current_image[message.chat.id])
         image = PIL.ImageOps.invert(image)
         image.save(TEMP_FILE_PATH)
         query.edit_message_text(text="Inverted image")
@@ -75,7 +75,7 @@ def opt3(query, bot, message):
 def opt4(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Stub")
     else:
         query.edit_message_text(text="Nothing to work with. Stub")
@@ -84,7 +84,7 @@ def opt4(query, bot, message):
 def opt5(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
 
         keyboard = [
             [
@@ -110,9 +110,9 @@ def opt5(query, bot, message):
 def opt5x(query, bot, message, str_name, str_shape):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
+        image = get_image(current_image[message.chat.id])
         skeletonized_img, restored_img, n_total = skeletonize_n_restore(image, str_name, str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
@@ -153,11 +153,11 @@ def opt11(query, bot, message):
 def opt12(query, bot, message):
     global current_image
 
-    if current_image is not None:
+    if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image)
+        image = get_image(current_image[message.chat.id])
         image.save(TEMP_FILE_PATH)
-        query.edit_message_text(text="Here is your message")
+        query.edit_message_text(text="Here is your image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
         query.edit_message_text(text="Nothing to show")
@@ -242,7 +242,7 @@ def image_handler(update: Update, context: CallbackContext) -> None:
     message = update.message
 
     if is_ready_to_upload:
-        current_image = bot.getFile(update.message.photo[-1].file_id)
+        current_image[message.chat.id] = bot.getFile(update.message.photo[-1].file_id)
         bot.send_message(message.chat.id, 'Image is successfully uploaded')
         is_ready_to_upload = False
 
