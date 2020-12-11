@@ -19,6 +19,7 @@ current_image = {}
 is_ready_to_upload = set()
 TEMP_FILE_PATH = 'data/outfile.png'
 TOKEN_FILE_PATH = 'data/token/token.txt'
+PROXY_FILE_PATH = 'data/proxy/proxy.txt'
 EXAMPLES_DIR_PATH = 'data/examples/'
 
 
@@ -253,7 +254,16 @@ def image_handler(update: Update, context: CallbackContext) -> None:
 def main():
     with open(TOKEN_FILE_PATH, 'r') as file:
         token = file.read()
-    updater = Updater(token, use_context=True)
+
+    with open(PROXY_FILE_PATH, 'r') as file:
+        proxy = file.read()
+
+
+    request_kwargs = {
+        'proxy_url': 'http://'+proxy,
+    }
+
+    updater = Updater(token, use_context=True, request_kwargs=request_kwargs)
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('menu', menu))
