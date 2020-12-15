@@ -114,7 +114,8 @@ def opt5x(query, bot, message, str_name, str_shape):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        skeletonized_img, restored_img, n_total = skeletonize_n_restore(image, str_name, str_shape)
+        skeletonized_img, restored_img, n_total = MorphologicalSkeleton.skeletonize_n_restore(image, str_name,
+                                                                                              str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
         pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
@@ -141,6 +142,37 @@ def opt53(query, bot, message):
 
 def opt54(query, bot, message):
     opt5x(query, bot, message, 'disk', 5)
+
+
+def opt6(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        skeletonized_img, n_total = Skeleton.skeletonize(image)
+        query.edit_message_text(
+            text="Image skeletonized with thinning")
+        pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+        bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+def opt7(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        hull_img, n_total = ConvexHull.get_convex_hull(image)
+        query.edit_message_text(
+            text="Convex hull of image")
+        pyplot.imsave(TEMP_FILE_PATH, hull_img, cmap=pyplot.cm.gray)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+        bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
+    else:
+        query.edit_message_text(text="Nothing to work with")
 
 
 def opt11(query, bot, message):
@@ -177,6 +209,8 @@ options = {
     '3': opt3,
     '4': opt4,
     '5': opt5,
+    '6': opt6,
+    '7': opt7,
     '11': opt11,
     '12': opt12,
     '13': opt13,
@@ -206,6 +240,12 @@ def menu(update: Update, context: CallbackContext) -> None:
         ],
         [
             InlineKeyboardButton("Skeletonize image", callback_data='5'),
+        ],
+        [
+            InlineKeyboardButton("Skeletonize image with thinning", callback_data='6'),
+        ],
+        [
+            InlineKeyboardButton("Get convex hull with thickening", callback_data='7'),
         ],
         [InlineKeyboardButton("Upload image", callback_data='11')],
         [InlineKeyboardButton("Show current image", callback_data='12')],
@@ -258,12 +298,13 @@ def main():
     with open(PROXY_FILE_PATH, 'r') as file:
         proxy = file.read()
 
+    # request_kwargs = {
+    #     'proxy_url': 'http://'+proxy,
+    # }
+    #
+    # updater = Updater(token, use_context=True, request_kwargs=request_kwargs)
 
-    request_kwargs = {
-        'proxy_url': 'http://'+proxy,
-    }
-
-    updater = Updater(token, use_context=True, request_kwargs=request_kwargs)
+    updater = Updater(token, use_context=True, )
 
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('menu', menu))
