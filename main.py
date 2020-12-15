@@ -2,13 +2,15 @@ import os
 import logging
 from io import BytesIO
 import PIL.ImageOps
+from PIL import Image
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters
 
 from matplotlib import pyplot
 
-from algorithms import *
+# from algorithms import *
+import algorithms
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -114,7 +116,7 @@ def opt5x(query, bot, message, str_name, str_shape):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        skeletonized_img, restored_img, n_total = MorphologicalSkeleton.skeletonize_n_restore(image, str_name,
+        skeletonized_img, restored_img, n_total = algorithms.morphological_skeleton.skeletonize_n_restore(image, str_name,
                                                                                               str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
@@ -150,7 +152,7 @@ def opt6(query, bot, message):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        skeletonized_img, n_total = Skeleton.skeletonize(image)
+        skeletonized_img, n_total = algorithms.skeletonize(image)
         query.edit_message_text(
             text="Image skeletonized with thinning")
         pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
@@ -165,7 +167,7 @@ def opt7(query, bot, message):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        hull_img, n_total = ConvexHull.get_convex_hull(image)
+        hull_img, n_total = algorithms.get_convex_hull(image)
         query.edit_message_text(
             text="Convex hull of image")
         pyplot.imsave(TEMP_FILE_PATH, hull_img, cmap=pyplot.cm.gray)
