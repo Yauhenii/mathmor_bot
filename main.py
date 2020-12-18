@@ -32,36 +32,7 @@ def get_image(current_image):
     return image
 
 
-def opt1(query, bot, message):
-    global current_image
-
-    if message.chat.id in current_image:
-        query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        image = ImageOps.grayscale(image)
-        image.save(TEMP_FILE_PATH)
-        query.edit_message_text(text="Grayscale image")
-        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
-    else:
-        query.edit_message_text(text="Nothing to work with")
-
-
-def opt2(query, bot, message):
-    global current_image
-
-    if message.chat.id in current_image:
-        query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        threshold = 128
-        image = image.convert('L').point(lambda x: 255 if x > threshold else 0, mode='1')
-        image.save(TEMP_FILE_PATH)
-        query.edit_message_text(text="Binary image")
-        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
-    else:
-        query.edit_message_text(text="Nothing to work with")
-
-
-def opt3(query, bot, message):
+def opt_binary_1(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
@@ -75,28 +46,19 @@ def opt3(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt4(query, bot, message):
-    global current_image
-
-    if message.chat.id in current_image:
-        query.edit_message_text(text="Stub")
-    else:
-        query.edit_message_text(text="Nothing to work with. Stub")
-
-
-def opt5(query, bot, message):
+def opt_binary_2(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
 
         keyboard = [
             [
-                InlineKeyboardButton("Diamond 3x3", callback_data='51'),
-                InlineKeyboardButton("Diamond 5x5", callback_data='52'),
+                InlineKeyboardButton("Diamond 3x3", callback_data='_binary_21'),
+                InlineKeyboardButton("Diamond 5x5", callback_data='_binary_22'),
             ],
             [
-                InlineKeyboardButton("Disk 3x3", callback_data='53'),
-                InlineKeyboardButton("Disk 5x5", callback_data='54'),
+                InlineKeyboardButton("Disk 3x3", callback_data='_binary_23'),
+                InlineKeyboardButton("Disk 5x5", callback_data='_binary_24'),
             ]
         ]
 
@@ -110,7 +72,7 @@ def opt5(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt5x(query, bot, message, str_name, str_shape):
+def opt_binary_2x(query, bot, message, str_name, str_shape):
     global current_image
 
     if message.chat.id in current_image:
@@ -131,23 +93,23 @@ def opt5x(query, bot, message, str_name, str_shape):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt51(query, bot, message):
-    opt5x(query, bot, message, 'diamond', 3)
+def opt_binary_21(query, bot, message):
+    opt_binary_2x(query, bot, message, 'diamond', 3)
 
 
-def opt52(query, bot, message):
-    opt5x(query, bot, message, 'diamond', 5)
+def opt_binary_22(query, bot, message):
+    opt_binary_2x(query, bot, message, 'diamond', 5)
 
 
-def opt53(query, bot, message):
-    opt5x(query, bot, message, 'disk', 3)
+def opt_binary_23(query, bot, message):
+    opt_binary_2x(query, bot, message, 'disk', 3)
 
 
-def opt54(query, bot, message):
-    opt5x(query, bot, message, 'disk', 5)
+def opt_binary_24(query, bot, message):
+    opt_binary_2x(query, bot, message, 'disk', 5)
 
 
-def opt6(query, bot, message):
+def opt_binary_3(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
@@ -163,7 +125,7 @@ def opt6(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt7(query, bot, message):
+def opt_binary_4(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
@@ -179,36 +141,36 @@ def opt7(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt9(query, bot, message):
+def opt_binary_5(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
 
         keyboard = [
             [
-                InlineKeyboardButton("Square 3x3", callback_data='91'),
-                InlineKeyboardButton("Square 5x5", callback_data='92'),
-                InlineKeyboardButton("Square 7x7", callback_data='93'),
+                InlineKeyboardButton("Square 3x3", callback_data='_binary_51'),
+                InlineKeyboardButton("Square 5x5", callback_data='_binary_52'),
+                InlineKeyboardButton("Square 7x7", callback_data='_binary_53'),
             ]
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded binary or grayscale image, otherwise filtration result may be unexpected. '
+            text='Make sure you have uploaded binary image, otherwise filtration result may be unexpected. '
                  + 'Please choose frame element', reply_markup=reply_markup)
 
     else:
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt9x(query, bot, message, f_size):
+def opt_binary_5x(query, bot, message, f_size):
     global current_image
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        filtered_img = algorithms.filter_image(image, f_size)
+        filtered_img = algorithms.filter_binary_image(image, f_size)
         query.edit_message_text(
             text="Image filtered with square {}x{}".format(f_size, f_size))
         pyplot.imsave(TEMP_FILE_PATH, filtered_img, cmap=pyplot.cm.gray)
@@ -216,19 +178,181 @@ def opt9x(query, bot, message, f_size):
     else:
         query.edit_message_text(text="Nothing to work with")
 
-def opt91(query, bot, message):
-    opt9x(query, bot, message, 3)
+
+def opt_binary_51(query, bot, message):
+    opt_binary_5x(query, bot, message, 3)
 
 
-def opt92(query, bot, message):
-    opt9x(query, bot, message, 5)
+def opt_binary_52(query, bot, message):
+    opt_binary_5x(query, bot, message, 5)
 
 
-def opt93(query, bot, message):
-    opt9x(query, bot, message, 7)
+def opt_binary_53(query, bot, message):
+    opt_binary_5x(query, bot, message, 7)
 
 
-def opt11(query, bot, message):
+def opt_binary(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Invert image", callback_data='_binary_1'),
+            ],
+            [
+                InlineKeyboardButton("Skeletonize image", callback_data='_binary_2'),
+            ],
+            [
+                InlineKeyboardButton("Skeletonize image with thinning", callback_data='_binary_3'),
+            ],
+            [
+                InlineKeyboardButton("Get convex hull with thickening", callback_data='_binary_4'),
+            ],
+            [
+                InlineKeyboardButton("Stub", callback_data='_binary_5'),
+            ],
+            [
+                InlineKeyboardButton("Filter image", callback_data='_binary_6'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded binary image, otherwise result may be unexpected.',
+            reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_grayscale_2(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Square 3x3", callback_data='_grayscale_21'),
+                InlineKeyboardButton("Square 5x5", callback_data='_grayscale_22'),
+                InlineKeyboardButton("Square 7x7", callback_data='_grayscale_23'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded grayscale image, otherwise filtration result may be unexpected. '
+                 + 'Please choose frame element', reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_grayscale_2x(query, bot, message, f_size):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        filtered_img = algorithms.filter_grayscale_image(image, f_size)
+        query.edit_message_text(
+            text="Image filtered with square {}x{}".format(f_size, f_size))
+        pyplot.imsave(TEMP_FILE_PATH, filtered_img, cmap=pyplot.cm.gray)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_grayscale_21(query, bot, message):
+    opt_grayscale_2x(query, bot, message, 3)
+
+
+def opt_grayscale_22(query, bot, message):
+    opt_grayscale_2x(query, bot, message, 5)
+
+
+def opt_grayscale_23(query, bot, message):
+    opt_grayscale_2x(query, bot, message, 7)
+
+
+def opt_grayscale(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Stub", callback_data='_grayscale_1'),
+            ],
+            [
+                InlineKeyboardButton("Filter image", callback_data='_grayscale_2'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded grayscale image, otherwise result may be unexpected.',
+            reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_colored_1(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        image = ImageOps.grayscale(image)
+        image.save(TEMP_FILE_PATH)
+        query.edit_message_text(text="Grayscale image")
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_colored_2(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        threshold = 128
+        image = image.convert('L').point(lambda x: 255 if x > threshold else 0, mode='1')
+        image.save(TEMP_FILE_PATH)
+        query.edit_message_text(text="Binary image")
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_colored(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+        keyboard = [
+            [
+                InlineKeyboardButton("To grayscale", callback_data='_colored_1')
+            ],
+            [
+                InlineKeyboardButton("To binary", callback_data='_colored_2')
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Choose option:',
+            reply_markup=reply_markup)
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_common_1(query, bot, message):
     global current_image
     global is_ready_to_upload
 
@@ -236,7 +360,7 @@ def opt11(query, bot, message):
     is_ready_to_upload.add(message.chat.id)
 
 
-def opt12(query, bot, message):
+def opt_common_2(query, bot, message):
     global current_image
 
     if message.chat.id in current_image:
@@ -249,7 +373,7 @@ def opt12(query, bot, message):
         query.edit_message_text(text="Nothing to show")
 
 
-def opt13(query, bot, message):
+def opt_common_3(query, bot, message):
     query.edit_message_text(text="Here are some image examples")
     for filename in os.listdir(EXAMPLES_DIR_PATH):
         bot.send_message(message.chat.id, filename)
@@ -259,39 +383,41 @@ def opt13(query, bot, message):
 def start(update: Update, context: CallbackContext) -> None:
     bot = update.message.bot
     message = update.message
-
     bot.send_message(message.chat.id, "Hi! Call /menu to go on")
 
 
 def menu(update: Update, context: CallbackContext) -> None:
     keyboard = [
-        [
-            InlineKeyboardButton("To grayscale", callback_data='1'),
-            InlineKeyboardButton("To binary", callback_data='2'),
-        ],
-        [
-            InlineKeyboardButton("Invert image", callback_data='3'),
-            InlineKeyboardButton("Stub", callback_data='4'),
-        ],
-        [
-            InlineKeyboardButton("Skeletonize image", callback_data='5'),
-        ],
-        [
-            InlineKeyboardButton("Skeletonize image with thinning", callback_data='6'),
-        ],
-        [
-            InlineKeyboardButton("Get convex hull with thickening", callback_data='7'),
-        ],
-        [
-            InlineKeyboardButton("Stub", callback_data='8'),
-        ],
-        [
-            InlineKeyboardButton("Filter grayscale image", callback_data='9'),
-            InlineKeyboardButton("Filter binary image", callback_data='10')
-        ],
-        [InlineKeyboardButton("Upload image", callback_data='11')],
-        [InlineKeyboardButton("Show current image", callback_data='12')],
-        [InlineKeyboardButton("Show image examples", callback_data='13')],
+        # [
+        #     InlineKeyboardButton("To grayscale", callback_data='1'),
+        #     InlineKeyboardButton("To binary", callback_data='2'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Invert image", callback_data='3'),
+        #     InlineKeyboardButton("Stub", callback_data='4'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Skeletonize image", callback_data='5'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Skeletonize image with thinning", callback_data='6'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Get convex hull with thickening", callback_data='7'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Stub", callback_data='8'),
+        # ],
+        # [
+        #     InlineKeyboardButton("Filter grayscale image", callback_data='9'),
+        #     InlineKeyboardButton("Filter binary image", callback_data='10')
+        # ],
+        [InlineKeyboardButton("Binary", callback_data='_binary')],
+        [InlineKeyboardButton("Grayscale", callback_data='_grayscale')],
+        [InlineKeyboardButton("Colored", callback_data='_colored')],
+        [InlineKeyboardButton("Upload image", callback_data='_common_1')],
+        [InlineKeyboardButton("Show current image", callback_data='_common_2')],
+        [InlineKeyboardButton("Show image examples", callback_data='_common_3')],
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
