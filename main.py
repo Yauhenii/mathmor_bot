@@ -1,21 +1,21 @@
 import os
+import sys
 import logging
 from io import BytesIO
-import PIL.ImageOps
+from PIL import ImageOps
 from PIL import Image
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters
-
 from matplotlib import pyplot
 
-# from algorithms import *
 import algorithms
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
+
 logger = logging.getLogger(__name__)
+current_module_name = sys.modules[__name__]
 
 current_image = {}
 is_ready_to_upload = set()
@@ -38,7 +38,7 @@ def opt1(query, bot, message):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        image = image.convert('LA')
+        image = ImageOps.grayscale(image)
         image.save(TEMP_FILE_PATH)
         query.edit_message_text(text="Grayscale image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
@@ -67,7 +67,7 @@ def opt3(query, bot, message):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        image = PIL.ImageOps.invert(image)
+        image = ImageOps.invert(image)
         image.save(TEMP_FILE_PATH)
         query.edit_message_text(text="Inverted image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
@@ -116,8 +116,9 @@ def opt5x(query, bot, message, str_name, str_shape):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        skeletonized_img, restored_img, n_total = algorithms.morphological_skeleton.skeletonize_n_restore(image, str_name,
-                                                                                              str_shape)
+        skeletonized_img, restored_img, n_total = algorithms.morphological_skeleton.skeletonize_n_restore(image,
+                                                                                                          str_name,
+                                                                                                          str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
         pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
@@ -161,6 +162,7 @@ def opt6(query, bot, message):
     else:
         query.edit_message_text(text="Nothing to work with")
 
+
 def opt7(query, bot, message):
     global current_image
 
@@ -175,6 +177,55 @@ def opt7(query, bot, message):
         bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
     else:
         query.edit_message_text(text="Nothing to work with")
+
+
+def opt9(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Square 3x3", callback_data='91'),
+                InlineKeyboardButton("Square 5x5", callback_data='92'),
+                InlineKeyboardButton("Square 7x7", callback_data='93'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded binary or grayscale image, otherwise filtration result may be unexpected. '
+                 + 'Please choose frame element', reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt9x(query, bot, message, f_size):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        filtered_img = algorithms.filter_image(image, f_size)
+        query.edit_message_text(
+            text="Image filtered with square {}x{}".format(f_size, f_size))
+        pyplot.imsave(TEMP_FILE_PATH, filtered_img, cmap=pyplot.cm.gray)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+def opt91(query, bot, message):
+    opt9x(query, bot, message, 3)
+
+
+def opt92(query, bot, message):
+    opt9x(query, bot, message, 5)
+
+
+def opt93(query, bot, message):
+    opt9x(query, bot, message, 7)
 
 
 def opt11(query, bot, message):
@@ -205,24 +256,6 @@ def opt13(query, bot, message):
         bot.send_photo(message.chat.id, photo=open(os.path.join(EXAMPLES_DIR_PATH, filename), 'rb'))
 
 
-options = {
-    '1': opt1,
-    '2': opt2,
-    '3': opt3,
-    '4': opt4,
-    '5': opt5,
-    '6': opt6,
-    '7': opt7,
-    '11': opt11,
-    '12': opt12,
-    '13': opt13,
-    '51': opt51,
-    '52': opt52,
-    '53': opt53,
-    '54': opt54
-}
-
-
 def start(update: Update, context: CallbackContext) -> None:
     bot = update.message.bot
     message = update.message
@@ -249,6 +282,13 @@ def menu(update: Update, context: CallbackContext) -> None:
         [
             InlineKeyboardButton("Get convex hull with thickening", callback_data='7'),
         ],
+        [
+            InlineKeyboardButton("Stub", callback_data='8'),
+        ],
+        [
+            InlineKeyboardButton("Filter grayscale image", callback_data='9'),
+            InlineKeyboardButton("Filter binary image", callback_data='10')
+        ],
         [InlineKeyboardButton("Upload image", callback_data='11')],
         [InlineKeyboardButton("Show current image", callback_data='12')],
         [InlineKeyboardButton("Show image examples", callback_data='13')],
@@ -260,8 +300,6 @@ def menu(update: Update, context: CallbackContext) -> None:
 
 
 def button(update: Update, context: CallbackContext) -> None:
-    global options
-
     query = update.callback_query
     bot = query.bot
     message = query.message
@@ -270,8 +308,10 @@ def button(update: Update, context: CallbackContext) -> None:
 
     query.answer()
 
-    if option in options:
-        options[option](query, bot, message)
+    getattr(current_module_name, 'opt' + str(option))(query, bot, message)
+
+    # if option in options:
+    #     options[option](query, bot, message)
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
