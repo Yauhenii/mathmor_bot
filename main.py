@@ -279,7 +279,7 @@ def opt_binary(query, bot, message):
                 InlineKeyboardButton("Get convex hull with thickening", callback_data='opt_binary_4'),
             ],
             [
-                InlineKeyboardButton("Get image spectrum", callback_data='opt_binary_5'),
+                InlineKeyboardButton("Stub", callback_data='opt_binary_5'),
             ],
             [
                 InlineKeyboardButton("Filter image", callback_data='opt_binary_6'),
@@ -415,7 +415,7 @@ def opt_grayscale(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Get image spectrum", callback_data='opt_grayscale_1'),
+                InlineKeyboardButton("Stub", callback_data='opt_grayscale_1'),
             ],
             [
                 InlineKeyboardButton("Filter image", callback_data='opt_grayscale_2'),
