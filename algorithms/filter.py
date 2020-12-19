@@ -35,20 +35,20 @@ def filter_image(img, f_size):
     # filter
     width = img.shape[0]
     height = img.shape[1]
+    temp_width = width + 2 * f_size - 2
+    temp_height = height + 2 * f_size - 2
 
-    scaled_img = np.zeros(shape=(width + 2 * f_size - 2, height + 2 * f_size - 2))
-
+    temp_img = np.zeros((temp_width, temp_height))
     for i in range(width):
         for j in range(height):
-            scaled_img[i + f_size - 1][j + f_size - 1] = img[i][j]
+            temp_img[i + f_size - 1][j + f_size - 1] = img[i][j]
 
-    filtered_img = np.zeros(shape=(width, height))
-    f = f_size // 2
-
-    for i in range(f, width + f - 1):
-        for j in range(f, height + f - 1):
-            s = []
-            s = sorted(scaled_img[i - f: i + f + 1, j - f: j + f + 1].flatten(), reverse=True)
-            filtered_img[i - f][j - f] = s[f_size - 1]
+    filtered_img = np.zeros((width, height))
+    for i in range(width):
+        for j in range(height):
+            array = temp_img[i: i + f_size + 1, j: j + f_size + 1].flatten()
+            array = np.sort(array)
+            array = array[::-1]
+            filtered_img[i][j] = array[f_size - 1]
 
     return filtered_img

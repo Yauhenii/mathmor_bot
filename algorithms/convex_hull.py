@@ -24,7 +24,7 @@ t5 = np.array([[[True, True, True],
 
 
 def get_convex_hull(img):
-    # preprocess
+    # preprocessing
     img = img.copy()
     img = img.convert('1')
     img = np.array(img)
@@ -38,6 +38,7 @@ def get_convex_hull(img):
         total_n += 1
         if (prev_img == img).all():
             break
+    # postprocessing
     hull_img = Image.fromarray(img.astype('uint8'))
     return hull_img, total_n
 

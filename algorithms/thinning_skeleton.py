@@ -24,7 +24,7 @@ t5 = np.array([[[False, True, False],
 
 
 def skeletonize(img):
-    # preprocess
+    # preprocessing
     img = img.copy()
     img = img.convert('1')
     img = np.array(img)
@@ -38,6 +38,7 @@ def skeletonize(img):
         total_n += 1
         if (prev_img == img).all():
             break
+    # postprocessing
     skeletonized_img = Image.fromarray(img.astype('uint8'))
     return skeletonized_img, total_n
 

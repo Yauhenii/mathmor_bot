@@ -1,10 +1,7 @@
-import io
-from PIL import Image
 from PIL import ImageOps
-import skimage.morphology as morphology
 from skimage.morphology import disk, diamond
+from skimage.morphology import opening, closing, dilation
 import numpy as np
-from matplotlib import pyplot
 
 
 # SPECTRUM
@@ -20,11 +17,13 @@ def get_spectrum_grayscale_image(img, str_elem_name, str_elem_size):
     img = ImageOps.invert(img)
     img = np.array(img)
     # get spectrum
-    area_function = (lambda im: np.sum(im))
-    helper_function = (lambda a, b: a - b)
-    spectrum_list = get_spectrum(img, str_elem, area_function, helper_function)
+    spectrum_list = get_spectrum(img, str_elem, grayscale_operation)
     # postprocessing
     return spectrum_list
+
+
+def grayscale_operation(img1, img2):
+    return np.sum(img1-img2)
 
 
 def get_spectrum_binary_image(img, str_elem_name, str_elem_size):
@@ -38,45 +37,47 @@ def get_spectrum_binary_image(img, str_elem_name, str_elem_size):
     img = np.array(img)
     img = np.invert(img)
     # get spectrum
-    area_function = (lambda im: np.count_nonzero(im))
-    helper_function = (lambda a, b: np.logical_and(a, np.logical_not(b)))
-    spectrum_list = get_spectrum(img, str_elem, area_function, helper_function)
+    spectrum_list = get_spectrum(img, str_elem, binary_operation)
     # postprocessing
     return spectrum_list
 
 
-def get_spectrum(image, str_elem, area_function, helper_function):
-    positive = []
-    negative = []
-    previous = str_elem
-    positive.append(area_function(helper_function(image, morphology.opening(image, str_elem))))
+def binary_operation(img1, img2):
+    return np.count_nonzero(np.logical_and(img1, np.logical_not(img2)))
+
+
+def get_spectrum(img, str_elem, operation):
+    p_list = []
+    n_list = []
+    p_list.append(operation(img, opening(img, str_elem)))
+    previous_str_elem = str_elem
     previous_opening = None
     previous_closing = None
 
     while True:
         if previous_opening is None:
-            previous_opening = morphology.opening(image, previous)
+            previous_opening = opening(img, previous_str_elem)
         if previous_closing is None:
-            previous_closing = morphology.closing(image, previous)
+            previous_closing = closing(img, previous_str_elem)
 
-        size = len(previous) + len(str_elem) - 1
-        next_element = np.zeros((size, size), dtype=np.bool)
-        i = len(str_elem) // 2
-        next_element[i: -i, i: -i] = previous
+        size = len(previous_str_elem) + len(str_elem) - 1
+        next_elem = np.zeros((size, size), dtype=np.bool)
+        sub = len(str_elem) // 2
+        next_elem[sub: -sub, sub: -sub] = previous_str_elem
 
-        current = morphology.dilation(next_element, str_elem)
-        opening = morphology.opening(image, current)
-        closing = morphology.closing(image, current)
+        current_str_elem = dilation(next_elem, str_elem)
+        current_opening = opening(img, current_str_elem)
+        current_closing = closing(img, current_str_elem)
 
-        positive.append(area_function(helper_function(previous_opening, opening)))
-        negative.append(area_function(helper_function(closing, previous_closing)))
+        p_list.append(operation(previous_opening, current_opening))
+        n_list.append(operation(current_closing, previous_closing))
 
-        if np.array_equal(closing, previous_closing) and np.array_equal(opening, previous_opening):
+        if np.array_equal(current_opening, previous_opening) and np.array_equal(current_closing, previous_closing):
             break
 
-        previous = current
-        previous_opening = opening
-        previous_closing = closing
+        previous_str_elem = current_str_elem
+        previous_opening = current_opening
+        previous_closing = current_closing
 
-    values = negative[::-1] + positive
-    return values
+    spectrum_list = n_list[::-1] + p_list
+    return spectrum_list

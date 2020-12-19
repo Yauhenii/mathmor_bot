@@ -2,10 +2,10 @@ import os
 import sys
 import logging
 from io import BytesIO
-# from PIL import ImageOps
-from PIL import Image
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters
+
+from PIL import Image
 from matplotlib import pyplot
 
 import algorithms
@@ -72,11 +72,12 @@ def opt_binary_2(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded binary image, otherwise skeletization result may be unexpected. '
-                 + 'Please choose structuring element', reply_markup=reply_markup)
+            text='Make sure you have uploaded binary image. Otherwise image will be converted to binary ' +
+                 'AUTOMATICALLY and skeletization result may be unexpected. ' +
+                 'Please choose structuring element', reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_2x(query, bot, message, str_name, str_shape):
@@ -85,7 +86,7 @@ def opt_binary_2x(query, bot, message, str_name, str_shape):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         img = get_image(current_image[message.chat.id])
-        skeletonized_img, restored_img, n_total = algorithms.skeletonize_n_restore(img, str_name,str_shape)
+        skeletonized_img, restored_img, n_total = algorithms.skeletonize_n_restore(img, str_name, str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
         save_image(skeletonized_img, TEMP_FILE_PATH, mode='pyplot')
@@ -95,7 +96,7 @@ def opt_binary_2x(query, bot, message, str_name, str_shape):
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Erosion or dilation number: {}'.format(n_total))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_21(query, bot, message):
@@ -127,7 +128,7 @@ def opt_binary_3(query, bot, message):
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_4(query, bot, message):
@@ -143,7 +144,7 @@ def opt_binary_4(query, bot, message):
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_5(query, bot, message):
@@ -165,8 +166,9 @@ def opt_binary_5(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded binary image, otherwise spectrum result may be unexpected. '
-                 + 'Please choose structuring element', reply_markup=reply_markup)
+            text='Make sure you have uploaded binary image. Otherwise image will be converted to binary ' +
+                 'AUTOMATICALLY and spectrum calculation result may be unexpected. ' +
+                 'Please choose structuring element', reply_markup=reply_markup)
 
     else:
         query.edit_message_text(text="Nothing to work with")
@@ -187,7 +189,7 @@ def opt_binary_5x(query, bot, message, str_name, str_shape):
         pyplot.savefig(TEMP_FILE_PATH)
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_51(query, bot, message):
@@ -222,11 +224,12 @@ def opt_binary_6(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded binary image, otherwise filtration result may be unexpected. '
-                 + 'Please choose frame element', reply_markup=reply_markup)
+            text='Make sure you have uploaded binary image. Otherwise image will be converted to binary ' +
+                 'AUTOMATICALLY and filtration result may be unexpected. ' +
+                 'Please choose frame element', reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_6x(query, bot, message, f_size):
@@ -241,7 +244,7 @@ def opt_binary_6x(query, bot, message, f_size):
         save_image(filtered_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_binary_61(query, bot, message):
@@ -289,7 +292,7 @@ def opt_binary(query, bot, message):
             reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_grayscale_1(query, bot, message):
@@ -311,11 +314,12 @@ def opt_grayscale_1(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded grayscale image, otherwise spectrum result may be unexpected. '
-                 + 'Please choose structuring element', reply_markup=reply_markup)
+            text='Make sure you have uploaded grayscale image. Otherwise image will be converted to grayscale ' +
+                 'AUTOMATICALLY and spectrum calculation result may be unexpected. ' +
+                 'Please choose structuring element', reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_grayscale_1x(query, bot, message, str_name, str_shape):
@@ -332,7 +336,7 @@ def opt_grayscale_1x(query, bot, message, str_name, str_shape):
         pyplot.savefig(TEMP_FILE_PATH)
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_grayscale_11(query, bot, message):
@@ -367,11 +371,12 @@ def opt_grayscale_2(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Make sure you have uploaded grayscale image, otherwise filtration result may be unexpected. '
-                 + 'Please choose frame element', reply_markup=reply_markup)
+            text='Make sure you have uploaded grayscale image. Otherwise image will be converted to grayscale ' +
+                 'AUTOMATICALLY and filtration result may be unexpected. ' +
+                 'Please choose frame element', reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_grayscale_2x(query, bot, message, f_size):
@@ -386,7 +391,7 @@ def opt_grayscale_2x(query, bot, message, f_size):
         save_image(filtered_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_grayscale_21(query, bot, message):
@@ -422,7 +427,7 @@ def opt_grayscale(query, bot, message):
             reply_markup=reply_markup)
 
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_colored_1(query, bot, message):
@@ -436,7 +441,7 @@ def opt_colored_1(query, bot, message):
         query.edit_message_text(text="Grayscale image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_colored_2(query, bot, message):
@@ -450,7 +455,7 @@ def opt_colored_2(query, bot, message):
         query.edit_message_text(text="Binary image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_colored(query, bot, message):
@@ -469,17 +474,17 @@ def opt_colored(query, bot, message):
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         query.edit_message_text(
-            text='Choose option:',
+            text='Choose an option:',
             reply_markup=reply_markup)
     else:
-        query.edit_message_text(text="Nothing to work with")
+        query.edit_message_text(text="Please upload image")
 
 
 def opt_common_1(query, bot, message):
     global current_image
     global is_ready_to_upload
 
-    query.edit_message_text(text="Upload image")
+    query.edit_message_text(text="Send your image as a message")
     is_ready_to_upload.add(message.chat.id)
 
 
@@ -521,7 +526,7 @@ def menu(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    update.message.reply_text('Please choose:', reply_markup=reply_markup)
+    update.message.reply_text('Choose any option:', reply_markup=reply_markup)
 
 
 def button(update: Update, context: CallbackContext) -> None:
@@ -555,7 +560,7 @@ def image_handler(update: Update, context: CallbackContext) -> None:
         is_ready_to_upload.remove(message.chat.id)
 
     else:
-        bot.send_message(message.chat.id, 'Please choose \'Upload image\' button from /menu to upload image')
+        bot.send_message(message.chat.id, 'Choose \'Upload image\' button from /menu to upload image')
 
 
 def main():
