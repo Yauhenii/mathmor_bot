@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 from io import BytesIO
-from PIL import ImageOps
+# from PIL import ImageOps
 from PIL import Image
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters
@@ -25,11 +25,18 @@ PROXY_FILE_PATH = 'data/proxy/proxy.txt'
 EXAMPLES_DIR_PATH = 'data/examples/'
 
 
-def get_image(current_image):
-    image_bytes = BytesIO(current_image.download_as_bytearray())
-    image_bytes.seek(0)
-    image = Image.open(image_bytes)
-    return image
+def save_image(img, file_path, mode):
+    if mode == 'pyplot':
+        pyplot.imsave(file_path, img, cmap=pyplot.cm.gray)
+    elif mode == 'PIL':
+        img.save(file_path)
+
+
+def get_image(current_img):
+    img_bytes = BytesIO(current_img.download_as_bytearray())
+    img_bytes.seek(0)
+    img = Image.open(img_bytes)
+    return img
 
 
 def opt_binary_1(query, bot, message):
@@ -37,9 +44,9 @@ def opt_binary_1(query, bot, message):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        image = ImageOps.invert(image)
-        image.save(TEMP_FILE_PATH)
+        img = get_image(current_image[message.chat.id])
+        img = algorithms.invert_image(img)
+        save_image(img, TEMP_FILE_PATH, mode='PIL')
         query.edit_message_text(text="Inverted image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
@@ -77,15 +84,13 @@ def opt_binary_2x(query, bot, message, str_name, str_shape):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        skeletonized_img, restored_img, n_total = algorithms.morphological_skeleton.skeletonize_n_restore(image,
-                                                                                                          str_name,
-                                                                                                          str_shape)
+        img = get_image(current_image[message.chat.id])
+        skeletonized_img, restored_img, n_total = algorithms.skeletonize_n_restore(img, str_name,str_shape)
         query.edit_message_text(
             text="Image skeletonized with {} {}x{}".format(str_name, str_shape, str_shape))
-        pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
+        save_image(skeletonized_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
-        pyplot.imsave(TEMP_FILE_PATH, restored_img, cmap=pyplot.cm.gray)
+        save_image(restored_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_message(message.chat.id, text='Restored image')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Erosion or dilation number: {}'.format(n_total))
@@ -114,11 +119,11 @@ def opt_binary_3(query, bot, message):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        skeletonized_img, n_total = algorithms.skeletonize(image)
+        img = get_image(current_image[message.chat.id])
+        skeletonized_img, n_total = algorithms.skeletonize(img)
         query.edit_message_text(
             text="Image skeletonized with thinning")
-        pyplot.imsave(TEMP_FILE_PATH, skeletonized_img, cmap=pyplot.cm.gray)
+        save_image(skeletonized_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
     else:
@@ -130,11 +135,11 @@ def opt_binary_4(query, bot, message):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        hull_img, n_total = algorithms.get_convex_hull(image)
+        img = get_image(current_image[message.chat.id])
+        hull_img, n_total = algorithms.get_convex_hull(img)
         query.edit_message_text(
             text="Convex hull of image")
-        pyplot.imsave(TEMP_FILE_PATH, hull_img, cmap=pyplot.cm.gray)
+        save_image(hull_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
         bot.send_message(message.chat.id, text='Iterations number: {}'.format(n_total))
     else:
@@ -172,8 +177,9 @@ def opt_binary_5x(query, bot, message, str_name, str_shape):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        spectrum_list = algorithms.get_spectrum_binary_image(image, str_name, str_shape)
+        img = get_image(current_image[message.chat.id])
+        spectrum_list = algorithms.get_spectrum_binary_image(img, str_name, str_shape)
+
         query.edit_message_text(
             text="Image spectrum with {} {}x{}".format(str_name, str_shape, str_shape))
         spectrum_range = len(spectrum_list) // 2
@@ -228,11 +234,11 @@ def opt_binary_6x(query, bot, message, f_size):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        filtered_img = algorithms.filter_binary_image(image, f_size)
+        img = get_image(current_image[message.chat.id])
+        filtered_img = algorithms.filter_binary_image(img, f_size)
         query.edit_message_text(
             text="Image filtered with square {}x{}".format(f_size, f_size))
-        pyplot.imsave(TEMP_FILE_PATH, filtered_img, cmap=pyplot.cm.gray)
+        save_image(filtered_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
         query.edit_message_text(text="Nothing to work with")
@@ -317,8 +323,8 @@ def opt_grayscale_1x(query, bot, message, str_name, str_shape):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        spectrum_list = algorithms.get_spectrum_grayscale_image(image, str_name, str_shape)
+        img = get_image(current_image[message.chat.id])
+        spectrum_list = algorithms.get_spectrum_grayscale_image(img, str_name, str_shape)
         query.edit_message_text(
             text="Image spectrum with {} {}x{}".format(str_name, str_shape, str_shape))
         spectrum_range = len(spectrum_list) // 2
@@ -373,11 +379,11 @@ def opt_grayscale_2x(query, bot, message, f_size):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        filtered_img = algorithms.filter_grayscale_image(image, f_size)
+        img = get_image(current_image[message.chat.id])
+        filtered_img = algorithms.filter_grayscale_image(img, f_size)
         query.edit_message_text(
             text="Image filtered with square {}x{}".format(f_size, f_size))
-        pyplot.imsave(TEMP_FILE_PATH, filtered_img, cmap=pyplot.cm.gray)
+        save_image(filtered_img, TEMP_FILE_PATH, mode='pyplot')
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
         query.edit_message_text(text="Nothing to work with")
@@ -424,9 +430,9 @@ def opt_colored_1(query, bot, message):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        image = ImageOps.grayscale(image)
-        image.save(TEMP_FILE_PATH)
+        img = get_image(current_image[message.chat.id])
+        img = algorithms.to_grayscale(img)
+        save_image(img, TEMP_FILE_PATH, mode='PIL')
         query.edit_message_text(text="Grayscale image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
@@ -438,10 +444,9 @@ def opt_colored_2(query, bot, message):
 
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
-        image = get_image(current_image[message.chat.id])
-        threshold = 128
-        image = image.convert('L').point(lambda x: 255 if x > threshold else 0, mode='1')
-        image.save(TEMP_FILE_PATH)
+        img = get_image(current_image[message.chat.id])
+        img = algorithms.to_binary(img)
+        save_image(img, TEMP_FILE_PATH, mode='PIL')
         query.edit_message_text(text="Binary image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
@@ -484,7 +489,7 @@ def opt_common_2(query, bot, message):
     if message.chat.id in current_image:
         query.edit_message_text(text="Processing...")
         image = get_image(current_image[message.chat.id])
-        image.save(TEMP_FILE_PATH)
+        save_image(image, TEMP_FILE_PATH, mode='PIL')
         query.edit_message_text(text="Here is your image")
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
