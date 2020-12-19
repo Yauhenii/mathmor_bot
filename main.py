@@ -187,6 +187,7 @@ def opt_binary_5x(query, bot, message, str_name, str_shape):
         spectrum_range = len(spectrum_list) // 2
         pyplot.bar([i for i in range(-spectrum_range, spectrum_range + 1)], spectrum_list)
         pyplot.savefig(TEMP_FILE_PATH)
+        pyplot.clf()
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
         query.edit_message_text(text="Please upload image")
@@ -334,6 +335,7 @@ def opt_grayscale_1x(query, bot, message, str_name, str_shape):
         spectrum_range = len(spectrum_list) // 2
         pyplot.bar([i for i in range(-spectrum_range, spectrum_range + 1)], spectrum_list)
         pyplot.savefig(TEMP_FILE_PATH)
+        pyplot.clf()
         bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
     else:
         query.edit_message_text(text="Please upload image")
