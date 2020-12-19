@@ -53,12 +53,12 @@ def opt_binary_2(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Diamond 3x3", callback_data='_binary_21'),
-                InlineKeyboardButton("Diamond 5x5", callback_data='_binary_22'),
+                InlineKeyboardButton("Diamond 3x3", callback_data='opt_binary_21'),
+                InlineKeyboardButton("Diamond 5x5", callback_data='opt_binary_22'),
             ],
             [
-                InlineKeyboardButton("Disk 3x3", callback_data='_binary_23'),
-                InlineKeyboardButton("Disk 5x5", callback_data='_binary_24'),
+                InlineKeyboardButton("Disk 3x3", callback_data='opt_binary_23'),
+                InlineKeyboardButton("Disk 5x5", callback_data='opt_binary_24'),
             ]
         ]
 
@@ -148,9 +148,68 @@ def opt_binary_5(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Square 3x3", callback_data='_binary_51'),
-                InlineKeyboardButton("Square 5x5", callback_data='_binary_52'),
-                InlineKeyboardButton("Square 7x7", callback_data='_binary_53'),
+                InlineKeyboardButton("Diamond 3x3", callback_data='opt_binary_51'),
+                InlineKeyboardButton("Diamond 5x5", callback_data='opt_binary_52'),
+            ],
+            [
+                InlineKeyboardButton("Disk 3x3", callback_data='opt_binary_53'),
+                InlineKeyboardButton("Disk 5x5", callback_data='opt_binary_54'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded binary image, otherwise spectrum result may be unexpected. '
+                 + 'Please choose structuring element', reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_binary_5x(query, bot, message, str_name, str_shape):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        spectrum_list = algorithms.get_spectrum_binary_image(image, str_name, str_shape)
+        query.edit_message_text(
+            text="Image spectrum with {} {}x{}".format(str_name, str_shape, str_shape))
+        spectrum_range = len(spectrum_list) // 2
+        pyplot.bar([i for i in range(-spectrum_range, spectrum_range + 1)], spectrum_list)
+        pyplot.savefig(TEMP_FILE_PATH)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_binary_51(query, bot, message):
+    opt_binary_5x(query, bot, message, 'diamond', 3)
+
+
+def opt_binary_52(query, bot, message):
+    opt_binary_5x(query, bot, message, 'diamond', 5)
+
+
+def opt_binary_53(query, bot, message):
+    opt_binary_5x(query, bot, message, 'disk', 3)
+
+
+def opt_binary_54(query, bot, message):
+    opt_binary_5x(query, bot, message, 'disk', 5)
+
+
+def opt_binary_6(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Square 3x3", callback_data='opt_binary_61'),
+                InlineKeyboardButton("Square 5x5", callback_data='opt_binary_62'),
+                InlineKeyboardButton("Square 7x7", callback_data='opt_binary_63'),
             ]
         ]
 
@@ -164,7 +223,7 @@ def opt_binary_5(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt_binary_5x(query, bot, message, f_size):
+def opt_binary_6x(query, bot, message, f_size):
     global current_image
 
     if message.chat.id in current_image:
@@ -179,16 +238,16 @@ def opt_binary_5x(query, bot, message, f_size):
         query.edit_message_text(text="Nothing to work with")
 
 
-def opt_binary_51(query, bot, message):
-    opt_binary_5x(query, bot, message, 3)
+def opt_binary_61(query, bot, message):
+    opt_binary_6x(query, bot, message, 3)
 
 
-def opt_binary_52(query, bot, message):
-    opt_binary_5x(query, bot, message, 5)
+def opt_binary_62(query, bot, message):
+    opt_binary_6x(query, bot, message, 5)
 
 
-def opt_binary_53(query, bot, message):
-    opt_binary_5x(query, bot, message, 7)
+def opt_binary_63(query, bot, message):
+    opt_binary_6x(query, bot, message, 7)
 
 
 def opt_binary(query, bot, message):
@@ -198,22 +257,22 @@ def opt_binary(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Invert image", callback_data='_binary_1'),
+                InlineKeyboardButton("Invert image", callback_data='opt_binary_1'),
             ],
             [
-                InlineKeyboardButton("Skeletonize image", callback_data='_binary_2'),
+                InlineKeyboardButton("Skeletonize image", callback_data='opt_binary_2'),
             ],
             [
-                InlineKeyboardButton("Skeletonize image with thinning", callback_data='_binary_3'),
+                InlineKeyboardButton("Skeletonize image with thinning", callback_data='opt_binary_3'),
             ],
             [
-                InlineKeyboardButton("Get convex hull with thickening", callback_data='_binary_4'),
+                InlineKeyboardButton("Get convex hull with thickening", callback_data='opt_binary_4'),
             ],
             [
-                InlineKeyboardButton("Stub", callback_data='_binary_5'),
+                InlineKeyboardButton("Get image spectrum", callback_data='opt_binary_5'),
             ],
             [
-                InlineKeyboardButton("Filter image", callback_data='_binary_6'),
+                InlineKeyboardButton("Filter image", callback_data='opt_binary_6'),
             ]
         ]
 
@@ -227,6 +286,65 @@ def opt_binary(query, bot, message):
         query.edit_message_text(text="Nothing to work with")
 
 
+def opt_grayscale_1(query, bot, message):
+    global current_image
+
+    if message.chat.id in current_image:
+
+        keyboard = [
+            [
+                InlineKeyboardButton("Diamond 3x3", callback_data='opt_grayscale_11'),
+                InlineKeyboardButton("Diamond 5x5", callback_data='opt_grayscale_12'),
+            ],
+            [
+                InlineKeyboardButton("Disk 3x3", callback_data='opt_grayscale_13'),
+                InlineKeyboardButton("Disk 5x5", callback_data='opt_grayscale_14'),
+            ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        query.edit_message_text(
+            text='Make sure you have uploaded grayscale image, otherwise spectrum result may be unexpected. '
+                 + 'Please choose structuring element', reply_markup=reply_markup)
+
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_grayscale_1x(query, bot, message, str_name, str_shape):
+    global current_image
+
+    if message.chat.id in current_image:
+        query.edit_message_text(text="Processing...")
+        image = get_image(current_image[message.chat.id])
+        spectrum_list = algorithms.get_spectrum_grayscale_image(image, str_name, str_shape)
+        query.edit_message_text(
+            text="Image spectrum with {} {}x{}".format(str_name, str_shape, str_shape))
+        spectrum_range = len(spectrum_list) // 2
+        pyplot.bar([i for i in range(-spectrum_range, spectrum_range + 1)], spectrum_list)
+        pyplot.savefig(TEMP_FILE_PATH)
+        bot.send_photo(message.chat.id, photo=open(TEMP_FILE_PATH, 'rb'))
+    else:
+        query.edit_message_text(text="Nothing to work with")
+
+
+def opt_grayscale_11(query, bot, message):
+    opt_grayscale_1x(query, bot, message, 'diamond', 3)
+
+
+def opt_grayscale_12(query, bot, message):
+    opt_grayscale_1x(query, bot, message, 'diamond', 5)
+
+
+def opt_grayscale_13(query, bot, message):
+    opt_grayscale_1x(query, bot, message, 'disk', 3)
+
+
+def opt_grayscale_14(query, bot, message):
+    opt_grayscale_1x(query, bot, message, 'disk', 5)
+
+
 def opt_grayscale_2(query, bot, message):
     global current_image
 
@@ -234,9 +352,9 @@ def opt_grayscale_2(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Square 3x3", callback_data='_grayscale_21'),
-                InlineKeyboardButton("Square 5x5", callback_data='_grayscale_22'),
-                InlineKeyboardButton("Square 7x7", callback_data='_grayscale_23'),
+                InlineKeyboardButton("Square 3x3", callback_data='opt_grayscale_21'),
+                InlineKeyboardButton("Square 5x5", callback_data='opt_grayscale_22'),
+                InlineKeyboardButton("Square 7x7", callback_data='opt_grayscale_23'),
             ]
         ]
 
@@ -284,10 +402,10 @@ def opt_grayscale(query, bot, message):
 
         keyboard = [
             [
-                InlineKeyboardButton("Stub", callback_data='_grayscale_1'),
+                InlineKeyboardButton("Get image spectrum", callback_data='opt_grayscale_1'),
             ],
             [
-                InlineKeyboardButton("Filter image", callback_data='_grayscale_2'),
+                InlineKeyboardButton("Filter image", callback_data='opt_grayscale_2'),
             ]
         ]
 
@@ -336,10 +454,10 @@ def opt_colored(query, bot, message):
     if message.chat.id in current_image:
         keyboard = [
             [
-                InlineKeyboardButton("To grayscale", callback_data='_colored_1')
+                InlineKeyboardButton("To grayscale", callback_data='opt_colored_1')
             ],
             [
-                InlineKeyboardButton("To binary", callback_data='_colored_2')
+                InlineKeyboardButton("To binary", callback_data='opt_colored_2')
             ]
         ]
 
@@ -388,36 +506,12 @@ def start(update: Update, context: CallbackContext) -> None:
 
 def menu(update: Update, context: CallbackContext) -> None:
     keyboard = [
-        # [
-        #     InlineKeyboardButton("To grayscale", callback_data='1'),
-        #     InlineKeyboardButton("To binary", callback_data='2'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Invert image", callback_data='3'),
-        #     InlineKeyboardButton("Stub", callback_data='4'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Skeletonize image", callback_data='5'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Skeletonize image with thinning", callback_data='6'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Get convex hull with thickening", callback_data='7'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Stub", callback_data='8'),
-        # ],
-        # [
-        #     InlineKeyboardButton("Filter grayscale image", callback_data='9'),
-        #     InlineKeyboardButton("Filter binary image", callback_data='10')
-        # ],
-        [InlineKeyboardButton("Binary", callback_data='_binary')],
-        [InlineKeyboardButton("Grayscale", callback_data='_grayscale')],
-        [InlineKeyboardButton("Colored", callback_data='_colored')],
-        [InlineKeyboardButton("Upload image", callback_data='_common_1')],
-        [InlineKeyboardButton("Show current image", callback_data='_common_2')],
-        [InlineKeyboardButton("Show image examples", callback_data='_common_3')],
+        [InlineKeyboardButton("Binary", callback_data='opt_binary')],
+        [InlineKeyboardButton("Grayscale", callback_data='opt_grayscale')],
+        [InlineKeyboardButton("Colored", callback_data='opt_colored')],
+        [InlineKeyboardButton("Upload image", callback_data='opt_common_1')],
+        [InlineKeyboardButton("Show current image", callback_data='opt_common_2')],
+        [InlineKeyboardButton("Show image examples", callback_data='opt_common_3')],
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -434,7 +528,7 @@ def button(update: Update, context: CallbackContext) -> None:
 
     query.answer()
 
-    getattr(current_module_name, 'opt' + str(option))(query, bot, message)
+    getattr(current_module_name, str(option))(query, bot, message)
 
     # if option in options:
     #     options[option](query, bot, message)
