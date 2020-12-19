@@ -20,11 +20,12 @@ def skeletonize_n_restore(img, str_elem_name='disk', str_elem_size=3):
     img = np.invert(img)
     # skeletonize
     s_list, res, total_n = get_skeleton(img, str_elem)
+    # postprocessing
+    skeletonized_img = Image.fromarray(res.astype('uint8'))
     # restore
     res = get_restored(res, s_list, str_elem, total_n)
     res = np.invert(res)
     # postprocessing
-    skeletonized_img = Image.fromarray(res.astype('uint8'))
     restored_img = Image.fromarray(res.astype('uint8'))
     return skeletonized_img, restored_img, total_n
 
